@@ -1,5 +1,5 @@
 {
-    "name": "GitHub Runners Status",
+    "name": "Tenstorrent Runner Monitor",
     "description": "My First Chrome Extension that shows Runner Status",
     "version": "1.0",
     "permissions": ["alarms", "storage", "activeTab"],
