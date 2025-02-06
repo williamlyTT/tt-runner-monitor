@@ -1,0 +1,14 @@
+{
+    "name": "GitHub Runners Status",
+    "description": "My First Chrome Extension that shows Runner Status",
+    "version": "1.0",
+    "permissions": ["alarms", "storage", "activeTab"],
+    "host_permissions": ["https://api.github.com/*"],
+    "manifest_version": 3,
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "background": {
+      "service_worker": "background.js"
+    }
+}

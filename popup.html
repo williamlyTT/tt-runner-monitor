@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>GitHub Runners</title>
+    <style>
+        body { font-family: Arial, sans-serif; width: 700px; height: 900px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f4f4f4; cursor: pointer; } /* ✅ Clickable headers */
+        th:nth-child(1), td:nth-child(1) { width: 30%; } /* Runner Name */
+        th:nth-child(3), td:nth-child(2) { width: 20%; } /* Type */
+        th:nth-child(4), td:nth-child(3) { width: 15%; } /* Status */
+        th:nth-child(5), td:nth-child(4) { width: 20%; } /* Job */
+        th:nth-child(6), td:nth-child(5) { width: 15%; } /* Workflow */
+        .active { background: #d4edda; }   /* ✅ Green for Active */
+        .idle { background: #fff3cd; }     /* 🟡 Yellow for Idle */
+        .offline { background: #f8d7da; }  /* ❌ Red for Offline */
+        .out-of-service { background: #f9c74f; } /* Orange for out-of-service */
+        button {
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h3>GitHub Runners Status</h3>
+    <button id="refreshButton">Refresh</button> <!-- ✅ New Refresh Button -->
+    <p id="lastUpdated">Last Updated: Never</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Runner</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Job</th>
+                <th>Branch</th>
+            </tr>
+        </thead>
+        <tbody id="runnerTable"></tbody>
+    </table>
+    <script src="popup.js"></script>
+</body>
+</html>
