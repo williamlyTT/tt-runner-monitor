@@ -28,6 +28,7 @@
     <h3>Tenstorrent Runner Monitor</h3>
     <button id="refreshButton">Refresh</button> <!-- ✅ New Refresh Button -->
     <p id="lastUpdated">Last Updated: Never</p>
+    <input type="text" id="label-search" placeholder="Search by labels..." />
     <table>
         <thead>
             <tr>
@@ -36,6 +37,7 @@
                 <th>Status</th>
                 <th>Job</th>
                 <th>Branch</th>
+                <th>Labels</th>
             </tr>
         </thead>
         <tbody id="runnerTable"></tbody>
