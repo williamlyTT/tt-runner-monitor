@@ -82,6 +82,7 @@ function loadRunnerData() {
                 <td>${statusText}</td>
                 <td>${jobColumn}</td>  <!-- ✅ Clickable Job Link -->
                 <td>${workflowColumn}</td>  <!-- ✅ Workflow Branch -->
+                <td>${runner.labels.map(label => label.name).join(', ')}</td>
             `;
 
             runnerTable.appendChild(row);
@@ -123,3 +124,32 @@ function sortTable(columnIndex) {
     // Rebuild the table with sorted rows
     rows.forEach(row => table.appendChild(row));
 }
+
+// Function to filter the table rows based on the search bar input
+function filterTable() {
+    const searchQuery = document.getElementById('label-search').value.toLowerCase();
+    const searchTerms = searchQuery.split(/\s+/); // Split the query into words, based on spaces
+    const table = document.getElementById("runnerTable");
+    const rows = Array.from(table.querySelectorAll("tr"));
+  
+    rows.forEach(row => {
+      const labelsCell = row.cells[5].textContent.toLowerCase(); // Get the labels cell
+      const labels = labelsCell.split(',').map(label => label.trim());
+      // Check if all search terms are in the labels list
+      const matches = searchTerms.every(term => labels.some(label => label.includes(term)));
+
+      // Show or hide row based on whether all terms match
+      if (matches) {
+        row.style.display = ''; // Show the row if it matches the search terms
+      } else {
+        row.style.display = 'none'; // Hide the row if it doesn't match
+      }
+    });
+  }
+
+// Set up the event listener for the search bar
+document.addEventListener('DOMContentLoaded', () => {
+    const searchBar = document.getElementById('label-search');
+    searchBar.addEventListener('input', filterTable); // Listen for input events
+    loadRunnerData(); // Initialize the table with runners
+});
