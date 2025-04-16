@@ -1,3 +1,5 @@
+import LZString from 'lz-string';
+
 document.addEventListener("DOMContentLoaded", function () {
     console.log("Popup Loaded. Fetching stored data...");
     loadRunnerData();
@@ -14,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function loadRunnerData() {
     chrome.storage.local.get(["runners", "workflows", "jobs", "lastUpdated"], data => {
-        console.log("Retrieved data from storage:", data);  // ✅ Log for debugging
+        console.log("Retrieved compressed data from storage");  // ✅ Log for debugging
 
         const runnerTable = document.getElementById("runnerTable");
         const lastUpdated = document.getElementById("lastUpdated");
@@ -27,66 +29,79 @@ function loadRunnerData() {
             return;
         }
 
-        if (data.lastUpdated) {
-            lastUpdated.innerText = `Last Updated: ${new Date(data.lastUpdated).toLocaleTimeString()}`;
+        // Decompress the data
+        try {
+            const decompressedData = {
+                runners: JSON.parse(LZString.decompressFromBase64(data.runners)),
+                workflows: JSON.parse(LZString.decompressFromBase64(data.workflows)),
+                jobs: JSON.parse(LZString.decompressFromBase64(data.jobs)),
+                lastUpdated: data.lastUpdated
+            };
+
+            if (decompressedData.lastUpdated) {
+                lastUpdated.innerText = `Last Updated: ${new Date(decompressedData.lastUpdated).toLocaleTimeString()}`;
+            }
+
+            decompressedData.runners.forEach(runner => {
+
+                let statusText = "Unknown";
+                let rowClass = "offline";
+
+                const runnerTags = runner.labels.map(label => label.name);
+                const isInService = runnerTags.includes("in-service");
+
+                if (runner.status === "offline") {
+                    statusText = "Offline";
+                    rowClass = "offline";
+                } else if (!isInService) {
+                    statusText = "Out of Service";  // ✅ Runner is online but NOT accepting jobs
+                    rowClass = "out-of-service";
+                } else if (runner.status === "online" && runner.busy) {
+                    statusText = "Active";
+                    rowClass = "active";
+                } else if (runner.status === "online" && !runner.busy) {
+                    statusText = "Idle";
+                    rowClass = "idle";
+                }
+
+                const validTypes = ["build", "E150", "N150", "P150", "N300", "config-t3000", "config-tg", "config-tgg"];
+                const runnerType = runner.labels
+                    .map(label => label.name)
+                    .find(label => validTypes.includes(label)) || "Unknown"; // Default to "Unknown"
+
+                // ✅ Find the job currently running on this runner
+                let activeJob = decompressedData.jobs.find(job => job.runner_name === runner.name && job.status === "in_progress") || null;
+
+                let jobColumn = "-";
+                let workflowColumn = "-";
+
+                if (activeJob) {
+                    const jobUrl = activeJob.html_url; // GitHub Job URL
+                    const jobName = activeJob.name;
+                    const workflowBranch = activeJob.head_branch || "Unknown Branch";
+
+                    jobColumn = `<a href="${jobUrl}" target="_blank">${jobName}</a>`; // ✅ Clickable Job Link
+                    workflowColumn = workflowBranch;
+                }
+
+                const row = document.createElement("tr");
+                row.className = rowClass;
+
+                row.innerHTML = `
+                    <td>${runner.name}</td>
+                    <td>${runnerType}</td>
+                    <td>${statusText}</td>
+                    <td>${jobColumn}</td>  <!-- ✅ Clickable Job Link -->
+                    <td>${workflowColumn}</td>  <!-- ✅ Workflow Branch -->
+                    <td>${runner.labels.map(label => label.name).join(', ')}</td>
+                `;
+
+                runnerTable.appendChild(row);
+            });
+        } catch (error) {
+            console.error("Error decompressing data:", error);
+            runnerTable.innerHTML = "<tr><td colspan='6'>Error decompressing data.</td></tr>";
         }
-
-        data.runners.forEach(runner => {
-
-            let statusText = "Unknown";
-            let rowClass = "offline";
-
-            const runnerTags = runner.labels.map(label => label.name);
-            const isInService = runnerTags.includes("in-service");
-
-            if (runner.status === "offline") {
-                statusText = "Offline";
-                rowClass = "offline";
-            } else if (!isInService) {
-                statusText = "Out of Service";  // ✅ Runner is online but NOT accepting jobs
-                rowClass = "out-of-service";
-            } else if (runner.status === "online" && runner.busy) {
-                statusText = "Active";
-                rowClass = "active";
-            } else if (runner.status === "online" && !runner.busy) {
-                statusText = "Idle";
-                rowClass = "idle";
-            }
-
-            const validTypes = ["build", "E150", "N150", "P150", "N300", "config-t3000", "config-tg", "config-tgg"];
-            const runnerType = runner.labels
-                .map(label => label.name)
-                .find(label => validTypes.includes(label)) || "Unknown"; // Default to "Unknown"
-
-            // ✅ Find the job currently running on this runner
-            let activeJob = data.jobs.find(job => job.runner_name === runner.name && job.status === "in_progress") || null;
-
-            let jobColumn = "-";
-            let workflowColumn = "-";
-
-            if (activeJob) {
-                const jobUrl = activeJob.html_url; // GitHub Job URL
-                const jobName = activeJob.name;
-                const workflowBranch = activeJob.head_branch || "Unknown Branch";
-
-                jobColumn = `<a href="${jobUrl}" target="_blank">${jobName}</a>`; // ✅ Clickable Job Link
-                workflowColumn = workflowBranch;
-            }
-
-            const row = document.createElement("tr");
-            row.className = rowClass;
-
-            row.innerHTML = `
-                <td>${runner.name}</td>
-                <td>${runnerType}</td>
-                <td>${statusText}</td>
-                <td>${jobColumn}</td>  <!-- ✅ Clickable Job Link -->
-                <td>${workflowColumn}</td>  <!-- ✅ Workflow Branch -->
-                <td>${runner.labels.map(label => label.name).join(', ')}</td>
-            `;
-
-            runnerTable.appendChild(row);
-        });
     });
 }
 

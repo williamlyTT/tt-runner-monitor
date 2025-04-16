@@ -1,3 +1,5 @@
+import LZString from 'lz-string';
+
 chrome.alarms.create("updateData", { periodInMinutes: 1 });
 
 chrome.alarms.onAlarm.addListener(alarm => {
@@ -62,14 +64,16 @@ async function fetchRunnerData() {
         });
 
         // ✅ Store everything in chrome.storage.local
-        chrome.storage.local.set({
-            runners: allRunners,
-            workflows: allWorkflows,
-            jobs: allJobs,
+        const compressedData = {
+            runners: LZString.compressToBase64(JSON.stringify(allRunners)),
+            workflows: LZString.compressToBase64(JSON.stringify(allWorkflows)),
+            jobs: LZString.compressToBase64(JSON.stringify(allJobs)),
             lastUpdated: Date.now()
-        });
+        };
 
-        console.log("✅ Data successfully stored in chrome.storage.local");
+        chrome.storage.local.set(compressedData);
+
+        console.log("✅ Data successfully compressed and stored in chrome.storage.local");
 
     } catch (error) {
         console.error("❌ Failed to fetch runner data:", error);

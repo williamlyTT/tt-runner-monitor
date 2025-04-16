@@ -9,6 +9,10 @@
       "default_popup": "popup.html"
     },
     "background": {
-      "service_worker": "background.js"
-    }
+      "service_worker": "dist/background.js"
+    },
+    "web_accessible_resources": [{
+      "resources": ["node_modules/lz-string/libs/lz-string.min.js"],
+      "matches": ["<all_urls>"]
+    }]
 }

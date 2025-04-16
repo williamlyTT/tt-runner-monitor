@@ -1,0 +1,18 @@
+{
+  "name": "tt-runner-monitor",
+  "version": "1.0.0",
+  "description": "Chrome extension to monitor Tenstorrent GitHub runners",
+  "main": "background.js",
+  "dependencies": {
+    "lz-string": "^1.5.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.11"
+  },
+  "scripts": {
+    "build": "esbuild background.js popup.js --bundle --outdir=dist",
+    "watch": "esbuild background.js popup.js --bundle --outdir=dist --watch"
+  },
+  "author": "",
+  "license": "ISC"
+} 
